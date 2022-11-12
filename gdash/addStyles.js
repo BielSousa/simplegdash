@@ -13,7 +13,7 @@ export function addStyles(obj){
 }
 
 export function add_chart_grid(chart, grid){
-    if(grid[0] == 1){
+    if(grid == 1){
         chart.style['grid-area'] = "1 / 1 / 2 / 2"
     }else if(grid==2){
         chart.style['grid-area'] = "1 / 2 / 2 / 3"

@@ -1,9 +1,6 @@
 import { createDash } from "./dash.js";
 
-export function initialize(data, charts, filters, cards){
+export function initializeDash(data_dash){
     google.charts.load('current', {'packages':['corechart','table', 'controls']});
-    google.charts.setOnLoadCallback(() =>{createDash(data, charts, filters, cards)});
+    google.charts.setOnLoadCallback(() =>{createDash(data_dash)});
 }
-
-
-window.initialize = initialize

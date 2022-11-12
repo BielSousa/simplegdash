@@ -1,25 +1,25 @@
 import { add_chart_grid } from "./addStyles.js"
 import { createView } from "./data.js"
-export function createMap(columns,grid, data, f){
 
-    var coordenadas = get_coordenadas(data, columns)
+export function createMap(chart, data, ){
+    var coordenadas = get_coordenadas(data, chart.columns)
     var container = document.getElementById('container-charts')
-    var charts = container.getElementsByTagName('div')
-    var chart = document.createElement("div")
+    var charts = document.getElementsByClassName('charts')
+    var chart_div = document.createElement("div")
     var map = document.createElement("div")
-    chart.classList.add('charts')
+    chart_div.classList.add('charts')
     var divId = 'chart_'+charts.length
-    add_chart_grid(chart, grid)
-    chart.id = divId 
+    add_chart_grid(chart_div, chart.grid)
+    chart_div.id = divId 
     map.id = 'map'
-    chart.appendChild(map)
-    container.appendChild(chart)
+    chart_div.appendChild(map)
+    container.appendChild(chart_div)
     var map = L.map('map').setView([-20.0141197, -41.3936926], 6.81);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-    plot_marker(coordenadas, map, L, data, columns, f)
+    plot_marker(coordenadas, map, L, data, chart.columns)
 
 }
 
@@ -43,12 +43,18 @@ function plot_marker(coordenadas, map, L, data, columns, f){
     }
 }
 
-import { changeCards } from "./cards.js"
 
-function filter_dash(data, coordenadas, columns, f){
-    var state_map = {columns, coordenadas, f}
-    changeCards(data, null, state_map=state_map)
-}
+
+
+
+
+
+// import { changeCards } from "./cards.js"
+
+// function filter_dash(data, coordenadas, columns, f){
+//     var state_map = {columns, coordenadas, f}
+//     changeCards(data, null, state_map=state_map)
+// }
 
 export function save_state_map(coordenadas){
     sessionStorage.setItem('map_state',JSON.stringify(coordenadas))

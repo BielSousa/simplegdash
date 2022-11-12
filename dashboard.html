@@ -1,107 +1,125 @@
 <html>
   <head>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
-     integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
-     crossorigin=""/>
-     <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
-        integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
-        crossorigin=""></script>
-    <script type="module" src="./gdash/main.js"></script>
-    <script type="text/javascript">
-      
-
-      data = {
-        columns:['Nome', 'Donuts comidos', 'Pizza comidas', 'lat', 'lng'],
-        columns_type:['string','number', 'number', 'number','number'],
-        rows:[['Michael' , 5, 2,51.509, -0.08],
-          ['Elisa', 7, 3,51.503,-0.06],
-          ['Robert', 3, 6,51.51, -0.047],
-          ['John', 2, 4,51.53, -0.047],
-          ['Jessica', 6, 2,51.51, -0.034],
-          ['Aaron', 1, 1,51.40, -0.047],
-          ['Margareth', 8, 10,51.51, -0.147]]
-      }
-
-      charts = [{
-        grid:1,
-        type:'PieChart',
-        title:'Grafico Donuts',
-        columns:[0,2],
-        options:{ pieHole: 0.4,}
-        },
-         {
-          grid:24,
-          type:'Map',
-          columns:[{lat:3,lng:4}]
-        },
-        {
-          grid:3,
-          type:'Table',
-          columns:[0,1,2],
-          options:{
-          }
-        }]
-
-      filters = [{
-        type:'NumberRangeFilter',
-        options:{
-          'filterColumnIndex': 1,
-          'ui':{'labelStacking':'vertical',
-            }
-          }
-        },
-        {
-        type:'NumberRangeFilter',
-        options:{
-          'filterColumnIndex': 2,
-          'ui':{'labelStacking':'vertical',
-            }
-          }
-        },
-        {
-          type:'CategoryFilter',
-          options:{
-            'filterColumnIndex': 0,
-            'ui':{'labelStacking':'vertical',
-                  'selectedValuesLayout':'belowWrapping',
-                  }
-            }
+      <script type="module" src="./gdash/index.js"></script>
+       <script type="text/javascript">
+        data_dash = {
+          data:{
+            columns:['Nome', 'Donuts comidos', 'Pizza comidas','data','lat', 'lng'],
+            columns_type:['string','number', 'number','date', 'number','number'],
+            rows:[['Michael' , 5, 2,new Date(2016,  0, 1),51.509, -0.08],
+              ['Elisa', 7, 3,new Date(2016,  1, 1),51.503,-0.06],
+              ['Robert', 3, 6,new Date(2016,  2, 1),51.51, -0.047],
+              ['John', 2, 4,new Date(2016,  3, 1),51.53, -0.047],
+              ['Jessica', 6, 2,new Date(2016,  4, 1),51.51, -0.034],
+              ['Aaron', 1, 1,new Date(2016,  5, 1),51.40, -0.047],
+              ['Margareth', 8, 10,new Date(2016,  6, 1),51.51, -0.147]]
           },
-        {
-          type:'StringFilter',
-          options:{
-            'filterColumnIndex': 0,
-            'ui':{'labelStacking':'vertical',
-                  'selectedValuesLayout':'belowWrapping',
-                  }
-            }
+          charts:[[{
+            grid:1,
+            type:'PieChart',
+            title:'Grafico Donuts',
+            columns:[0,2],
+            options:{ pieHole: 0.4,}
+            },{grid:1,
+            type:'ColumnChart',
+            title:'Grafico Pizza',
+            columns:[0,2],
+            options:{}
+            }],
+            {
+              grid:24,
+              type:'Map',
+              columns:[{lat:4,lng:5}]
+            },[
+              {
+              grid:3,
+              type:'Table',
+              title:'Tabela 1',
+              columns:[0,1,2],
+              options:{}
+              },
+              {grid:3,
+            type:'ColumnChart',
+            title:'Grafico Pizza',
+            columns:[0,2],
+            options:{}
+            }]
+            ],
+          filters:[{
+            type:'NumberRangeFilter',
+            options:{
+              'filterColumnIndex': 1,
+              'ui':{'labelStacking':'vertical',
+                }
+              }
+            },
+            {
+            type:'NumberRangeFilter',
+            options:{
+              'filterColumnIndex': 2,
+              'ui':{'labelStacking':'vertical',
+                }
+              }
+            },
+            {
+            type:'DateRangeFilter',
+            options:{
+              'filterColumnIndex': 3,
+              'ui':{'labelStacking':'vertical',
+                  'format':'MM/YY'
+                }
+              }
+            },
+            {
+              type:'CategoryFilter',
+              options:{
+                'filterColumnIndex': 0,
+                'ui':{'labelStacking':'vertical',
+                      'selectedValuesLayout':'belowWrapping',
+                      }
+                }
+              },
+            {
+              type:'StringFilter',
+              options:{
+                'filterColumnIndex': 0,
+                'ui':{'labelStacking':'vertical',
+                      'selectedValuesLayout':'belowWrapping',
+                      }
+                }
+              }
+          ],
+          cards:[
+          {
+            column:1,
+            type:'total',
+            subtitle:'Total Donuts'
+          },{
+            type:'percent',
+            column_dividend:2,
+            column_divisor:1,
+            subtitle:'Teste percentual'
+          },{
+            type:'total-percent',
+            column:1,
+            column_divisor:1,
+            column_dividend:2,
+            subtitle:'Total + percent'
+          },{
+            type:'percent-total',
+            column:2,
+            column_divisor:1,
+            column_dividend:2,
+            subtitle:'Total Pizza'
+          },{
+            column:1,
+            subtitle:'Total Donuts'
           }
-      ]
-
-      cards = [
-      {
-        column:1,
-        subtitle:'Total Donuts'
-      },{
-        column:2,
-        subtitle:'Total Pizza'
-      },{
-        column:1,
-        subtitle:'Total Donuts'
-      },{
-        column:2,
-        subtitle:'Total Pizza'
-      },{
-        column:1,
-        subtitle:'Total Donuts'
-      }
-      ]
-
+          ]
+        }
     </script>
-    <link  rel="stylesheet" type="text/css" href="./gdash/css/main.css">
   </head>
-  <body onload="initialize(data, charts, filters, cards)">
+  <body onload="inicialize(data_dash)">
     <div class="nav">
     <h1>DASHBOARD EXEMPLO</h1>
     </div>

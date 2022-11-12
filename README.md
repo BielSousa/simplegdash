@@ -6,3 +6,6 @@ Ele ja rendenriza na pagina um dashboard interativo.
 
 ## Ainda em construção
 ## Colaborações são bem vindas
+
+## sobre a base de dados
+    Para para inicializar 
