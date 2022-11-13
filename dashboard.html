@@ -16,79 +16,46 @@
           },
           charts:[[{
             grid:1,
-            type:'PieChart',
-            title:'Grafico Donuts',
+            type:'Scatter',
+            title:'Dispersão',
+            columns:[2,3],
+            },{
+            grid:1,
+            type:'Pie',
+            title:'Pizza',
             columns:[1,3],
-            options:{ pieHole: 0.4,}
             },{grid:1,
-            type:'LineChart',
-            title:'Grafico Pizza',
+            type:'Donuts',
+            title:'Rosca',
+            columns:[1,3],
+            },{grid:1,
+            type:'Line',
+            title:'Linha',
             columns:[1,2,3],
-            options:{}
+            },{grid:1,
+            type:'Bar',
+            title:'Barra',
+            columns:[1,2,3],
+            },{grid:1,
+            type:'Histogram',
+            title:'histograma',
+            columns:[1,3],
             }],
-            {
-              grid:3,
+            {grid:3,
               type:'Map',
               coordIni:{lat:51.50, lng:-0.04},
               columns:{lat:5,lng:6}
-            },[
-              {
-              grid:24,
+            },{grid:24,
               type:'Table',
               title:'Tabela 1',
               columns:[0,1,2,3,4,5,6],
-              options:{}
-              },
-              {grid:24,
-            type:'ColumnChart',
-            title:'Grafico Pizza',
-            columns:[1,3],
-            options:{}
-            }]
-            ],
-          filters:[{
-            type:'NumberRangeFilter',
-            options:{
-              'filterColumnIndex': 2,
-              'ui':{'labelStacking':'vertical',
-                }
-              }
-            },
-            {
-            type:'NumberRangeFilter',
-            options:{
-              'filterColumnIndex': 3,
-              'ui':{'labelStacking':'vertical',
-                }
-              }
-            },
-            {
-            type:'DateRangeFilter',
-            options:{
-              'filterColumnIndex': 4,
-              'ui':{'labelStacking':'vertical',
-                  'format':'MM/YY '
-                }
-              }
-            },
-            {
-              type:'CategoryFilter',
-              options:{
-                'filterColumnIndex': 1,
-                'ui':{'labelStacking':'vertical',
-                      'selectedValuesLayout':'belowWrapping',
-                      }
-                }
-              },
-            {
-              type:'StringFilter',
-              options:{
-                'filterColumnIndex': 1,
-                'ui':{'labelStacking':'vertical',
-                      'selectedValuesLayout':'belowWrapping',
-                      }
-                }
-              }
+              }],
+          filters:[
+            {type:'NumberRangeFilter', column:2},
+            {type:'NumberRangeFilter', column:3},
+            {type:'DateRangeFilter', column:4},
+            {type:'CategoryFilter', column:1},
+            {type:'StringFilter', column:1}
           ],
           cards:[
           {
