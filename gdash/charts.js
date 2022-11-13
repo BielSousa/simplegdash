@@ -1,4 +1,4 @@
-import { add_chart_grid } from "./addStyles.js"
+import { addChartGrid } from "./addStyles.js"
 import { updateFiltersState } from "./filters.js"
 import { createMap } from "./maps.js"
 
@@ -10,7 +10,7 @@ function createContainerCharts(grid){
     let divId = 'chart_'+charts.length
     chart.id = divId
     container.appendChild(chart)
-    add_chart_grid(chart, grid)
+    addChartGrid(chart, grid)
     return divId
 }
 
@@ -51,7 +51,7 @@ function createGroupContainerCharts(grid, option_text){
     option.innerText = option_text
     select.appendChild(option)
     group.appendChild(chart)
-    add_chart_grid(container_group, grid)
+    addChartGrid(container_group, grid)
     return divId
 }
 

@@ -1,6 +1,5 @@
 import { Gdata } from "./dash.js"
 import { createView } from "./data.js"
-import { get_state_map, save_state_map } from "./maps.js"
 
 export function createCards(cards, data){
     for(let i in cards){
@@ -89,17 +88,17 @@ function getCardValue(card, rows=null){
         if(types[i] === 'total'){
             var values = []
             for(var row in rows){
-                values.push(view.getValue(Number(row), Number(card.column)))
+                values.push(view.getValue(Number(rows[row]), Number(card.column)))
             }
             values_return.total = sum(values)
         } else if(types[i] === 'percent'){
             var dividend = []
             var divisor = []
             for(var row in rows){
-                dividend.push(view.getValue(Number(row), Number(card.column_dividend)))
+                dividend.push(view.getValue(Number(rows[row]), Number(card.column_dividend)))
             }
             for(var row in rows){
-                divisor.push(view.getValue(Number(row), Number(card.column_divisor)))
+                divisor.push(view.getValue(Number(rows[row]), Number(card.column_divisor)))
             }
             if(divisor.length > 0){
                 values_return.percent = ((sum(dividend) / sum(divisor))*100).toFixed(1).toLocaleString('pt-BR', { style: 'percent'})

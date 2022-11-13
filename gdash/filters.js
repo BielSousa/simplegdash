@@ -4,7 +4,14 @@ import { addStyles } from "./addStyles.js";
 export function createFilters(filters, data){
     let listFilters = []
     let new_data = gdata(data)
-
+    let filter_index =   {
+            type:'NumberRangeFilter',
+            options:{
+              'filterColumnIndex': 0,
+              'ui':{'labelStacking':'vertical'}
+            }
+        }
+    filters.splice(0,0, filter_index)
     for(var i in filters){
         let filter
         let state
@@ -32,7 +39,7 @@ export function createFilters(filters, data){
         
         filter = new google.visualization.ControlWrapper({
             'controlType': filters[i].type,
-            'containerId': (filters[i].type === 'DateRangeFilter' ? getFilterId('none') : getFilterId()),
+            'containerId': ((filters[i].type === 'DateRangeFilter')||(filters[i].options.filterColumnIndex === 0) ? getFilterId('none') : getFilterId()),
             'options':filters[i].options,
             'state': state
             })
@@ -45,18 +52,17 @@ export function createFilters(filters, data){
 }
 
 function fomartDateInput(date){
-    date = new Date(date)
     var day = date.getDate();
-    var month = date.getMonth() + 1;
+    var month = date.getMonth()+1;
     var year = date.getFullYear();
     if (month < 10) month = "0" + month;
     if (day < 10) day = "0" + day;
-    return year + "-" + month + "-" + day; 
+    return year + "-" + month + "-" + day
 }
 
 function fomartDateFilter(date){
-    date = new Date(date)
-    return new Date(date.setDate(date.getDate()+1))
+     date = new Date(date)
+    return date
 }
 
    
@@ -95,10 +101,10 @@ function createDateFilter(range, filter, label){
     div_start.style = 'display: flex ; flex-direction: column; width:40% ; text-align:center'
     div_end.style = 'display: flex ; flex-direction: column; width:40%;  text-align:center'
     end_title.innerText = 'Data Final'
-    date_start.value =  fomartDateInput(new Date(range.min.setDate(range.min.getDate()+1)))
+    date_start.value =  fomartDateInput(new Date(range.min))
     date_end.type = 'date'
     date_end.name = 'end'
-    date_end.value = fomartDateInput(new Date(range.max.setDate(range.max.getDate()+1)))
+    date_end.value = fomartDateInput(new Date(range.max))
     limite.innerText = "[min:".concat(String(date_start.value) + '\xa0'.repeat(5)).concat("max:").concat(date_end.value).concat("]")
     limite.style = 'text-align:center; font-size:14px; display: block; padding:10px;margin-top:5px; color: #999; background-color:#eee'
     filter.state = {lowValue:date_start.value, highValue:date_end.value}
@@ -149,7 +155,7 @@ export function updateFiltersState(){
 }
 
 import { updateCards } from "./cards.js";
-function updateFilterState(filter){
+export function updateFilterState(filter){
     let rows = columnFilteredByFilter(filter)
     updateCards(rows)
 }
@@ -172,6 +178,7 @@ function columnFilteredByFilter(filter){
         let min = fomartDateFilter(filter.state.lowValue)
         let max= fomartDateFilter(filter.state.highValue)
         f_date.setState({lowValue:min, highValue:max})
+        console.log(f_date)
         f_date.draw()
         return view.getFilteredRows([{column:column, minValue:min, maxValue:max}])
     }else if(filter.su.ui.cssClass === 'filter-string'){

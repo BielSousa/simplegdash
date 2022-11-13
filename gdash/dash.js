@@ -1,4 +1,4 @@
-import { gdata} from "./data.js";
+import { gdata, addIndex} from "./data.js";
 import { createCharts } from "./charts.js";
 import { createFilters } from "./filters.js";
 import { createCards } from "./cards.js";
@@ -12,7 +12,7 @@ export var Gdata
 export function createDash(data_dash){
     Gdashboard = new google.visualization.Dashboard(document.getElementById('dashboard'));
     
-    Gdata = data_dash.data
+    Gdata = addIndex(data_dash.data)
     const filters = data_dash.filters
     const cards = data_dash.cards
     const charts = data_dash.charts
