@@ -2,6 +2,7 @@ import { gdata } from "./data.js";
 import { addStyles } from "./addStyles.js";
 
 export function createFilters(filters, data){
+    let list_exclusives = ['CategoryFilter','StringFilter']
     let listFilters = []
     let new_data = gdata(data)
     let filter_index =   {
@@ -11,6 +12,15 @@ export function createFilters(filters, data){
               'ui':{'labelStacking':'vertical'}
             }
         }
+    for(let i in filters){
+        if(list_exclusives.includes(filters[i].type)){
+            filters[i].options = {'filterColumnIndex': filters[i].column,'ui':{'labelStacking':'vertical','selectedValuesLayout':'belowWrapping',}}
+        }else{
+            filters[i].options = {'filterColumnIndex': filters[i].column,'ui':{'labelStacking':'vertical'}}
+        }
+    }    
+
+
     filters.splice(0,0, filter_index)
     for(var i in filters){
         let filter
@@ -60,8 +70,10 @@ function fomartDateInput(date){
     return year + "-" + month + "-" + day
 }
 
-function fomartDateFilter(date){
-     date = new Date(date)
+function fomartDateFilter(date, type){
+    date = new Date(date)
+    console.log(type)
+    date = (type === 'min'? new Date(date.setDate(date.getDate()-2)):new Date(date.setDate(date.getDate()+1)))
     return date
 }
 
@@ -175,8 +187,8 @@ function columnFilteredByFilter(filter){
     }else if(filter.su.ui.cssClass === 'filter-date'){
         let f_date = GlistFilters[Number(String(filter.divId).replace('filter_',''))]
         let column = filter.filterColumnIndex
-        let min = fomartDateFilter(filter.state.lowValue)
-        let max= fomartDateFilter(filter.state.highValue)
+        let min = fomartDateFilter(filter.state.lowValue, 'min')
+        let max= fomartDateFilter(filter.state.highValue, 'max')
         f_date.setState({lowValue:min, highValue:max})
         console.log(f_date)
         f_date.draw()
