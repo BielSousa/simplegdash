@@ -56,6 +56,7 @@ function createGroupContainerCharts(grid, option_text){
 }
 
 export function createCharts(charts, data){
+    let list_exclusives = ['Table','Histogram','TreeMap']
     let listCharts = []
     let listMaps = []
     let chart
@@ -63,9 +64,13 @@ export function createCharts(charts, data){
         if(Object.prototype.toString.call(charts[i]) === '[object Array]'){
             let group = charts[i]
             for(let j in group){
+                if(group[j].type === 'Donuts'){
+                    group[j].type = 'Pie'
+                    group[j].options = {pieHole:0.4}
+                    }   
                 let divId = createGroupContainerCharts(group[j].grid, group[j].title)
                 chart = new google.visualization.ChartWrapper({
-                        'chartType':group[j].type,
+                        'chartType':(list_exclusives.includes(group[j].type) ? group[j].type : group[j].type +'Chart' ),
                         'containerId': divId,
                         'view':{'columns':group[j].columns},
                         'options':group[j].options
@@ -73,10 +78,14 @@ export function createCharts(charts, data){
                 listCharts.push(chart)
             }
         } else {
+            if(charts[i].type === 'Donuts'){
+                charts[i].type = 'Pie'
+                charts[i].options.pieHole = 0.4
+            }
             if(charts[i].type !== 'Map'){
                 let divId = createContainerCharts(charts[i].grid)
                 chart = new google.visualization.ChartWrapper({
-                            'chartType':charts[i].type,
+                            'chartType':(list_exclusives.includes(charts[i].type) ? charts[i].type : charts[i].type +'Chart' ),
                             'containerId': divId,
                             'view':{'columns':charts[i].columns},
                             'options':charts[i].options
