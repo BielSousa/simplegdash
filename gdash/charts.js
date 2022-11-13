@@ -1,6 +1,7 @@
 import { add_chart_grid } from "./addStyles.js"
 import { updateFiltersState } from "./filters.js"
 import { createMap } from "./maps.js"
+
 function createContainerCharts(grid){
     let container = document.getElementById('container-charts')
     let charts = container.getElementsByClassName('charts')

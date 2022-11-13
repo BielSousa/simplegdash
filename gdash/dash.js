@@ -24,7 +24,7 @@ export function createDash(data_dash){
         GlistFilters = createFilters(filters, Gdata)
         GlistCharts = createCharts(charts, Gdata)
         GlistCards = createCards(cards, Gdata, GlistFilters)
-
+        
         Gdashboard.bind(GlistFilters, GlistCharts.listCharts);
         DrawDash(gdata(Gdata), Gdashboard)
 
