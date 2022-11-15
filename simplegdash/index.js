@@ -2,12 +2,21 @@ window.inicialize = inicialize
 
 function inicialize(data_dash){
     initializeGoogleCharts(data_dash)
+    initializeFonts()
     initializeLeaflet()
-    inicializeSimpleGDash(data_dash)
+    inicializeSimpleGDash()
 }
 
 import { initializeDash } from "./main.js"
 
+function initializeFonts(){
+    // <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200'
+    document.head.appendChild(link)
+
+}
 function initializeGoogleCharts(data_dash){
     // <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
@@ -19,7 +28,8 @@ function initializeGoogleCharts(data_dash){
     script.onload = initializeDash(data_dash)
         console.log('Inicializando google charts')
     })
-    }
+}
+
 
 function initializeLeaflet(){
     //  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
@@ -48,11 +58,11 @@ function inicializeSimpleGDash(){
 
     const script = document.createElement('script')
     script.type = 'module'
-    script.src = './gdash/main.js'
+    script.src = './simplegdash/main.js'
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.type = 'text/css'
-    link.href = './gdash/css/main.css'
+    link.href = './simplegdash/css/main.css'
     document.head.appendChild(link)
     document.head.appendChild(script)
     script.addEventListener('load', ()=>{
@@ -62,3 +72,5 @@ function inicializeSimpleGDash(){
     console.log('deu ruim')
     })
 }
+
+

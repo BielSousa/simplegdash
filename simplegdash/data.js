@@ -3,6 +3,11 @@ export function gdata(data){
     var gdata = new google.visualization.DataTable();
     for(var i in data.columns){
         gdata.addColumn(data.columns_type[i], data.columns[i]);
+        if(data.columns_type[i].includes('date','datetime')){
+            for(let row=0;row <data.rows.length; row++){
+                    data.rows[row][i] = new Date(data.rows[row][i])
+            }
+        }
     }
     gdata.addRows(data.rows)
     return gdata
@@ -28,18 +33,15 @@ function fomartDate(date){
 
 function adjustDates(data){
     let types = data.columns_type
-    // console.log(types)
     let rows = data.rows
     let columns = []
     for(let i=0;i<types.length;i++){
         if(types[i] === 'date'){
-            // console.log(types[i])
             columns.push(i)
         }
     }
     for(let j=0; j<columns;j++){
         for(let i=0;i<rows.length;i++){
-            // console.log(rows[i][columns[j]], j, i)
             rows[i][columns[j]] = fomartDate(rows[i][columns[j]])
         }
     }

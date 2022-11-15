@@ -1,6 +1,8 @@
 import { addChartGrid } from "./addStyles.js"
-import { updateFiltersState } from "./filters.js"
 import { createMap } from "./maps.js"
+import { gdata } from "./data.js"
+import { Gdata } from "./dash.js"
+
 
 function createContainerCharts(grid){
     let container = document.getElementById('container-charts')
@@ -15,8 +17,13 @@ function createContainerCharts(grid){
 }
 
 function addDropDown(group_charts){
+    let div = document.createElement('div')
+    let label = document.createElement('label')
     let select = document.createElement('select')
-    group_charts.appendChild(select)
+    label.innerText = 'Selecione o gráfico'
+    div.appendChild(label)
+    div.appendChild(select)
+    group_charts.appendChild(div)
     select.addEventListener('change', function(){changeChartGroup(group_charts,this.value), updateFiltersState()})
 }
 
@@ -83,13 +90,15 @@ export function createCharts(charts, data){
                 charts[i].options.pieHole = 0.4
             }
             if(charts[i].type !== 'Map'){
+                let dados = gdata(Gdata)
                 let divId = createContainerCharts(charts[i].grid)
                 chart = new google.visualization.ChartWrapper({
                             'chartType':(list_exclusives.includes(charts[i].type) ? charts[i].type : charts[i].type +'Chart' ),
                             'containerId': divId,
-                            'view':{'columns':charts[i].columns},
+                            'dataTable':dados,
                             'options':charts[i].options
                             })
+                chart.draw()
                 listCharts.push(chart)
             } else{
                 createMap(charts[i], data)
@@ -111,4 +120,11 @@ function changeChartGroup(group,divId){
             }
         }
     }
+}
+
+import { GlistCharts } from "./dash.js"
+export function updateCharts(rows){
+    
+
+chart.setDataTable()
 }

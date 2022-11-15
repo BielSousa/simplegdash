@@ -1,103 +1,97 @@
+          <!-- data:{
+            columns:['Nome', 'Donuts comidos', 'Pizza comidas','data','lat', 'lng', 'teste'],
+            columns_type:['string','number', 'number','date', 'number','number','number'],
+            rows:[['Michael' , 5, 2,new Date("2016-01-01"),51.509, -0.08,10000000000000000000000000000000000000000000000000],
+              ['Elisa', 7, 3,new Date("2016-02-01"),51.503,-0.06,10000000000000000000000000000000000000000000000000],
+              ['Robert', 3, 6,new Date("2016-03-01"),51.51, -0.047,10000000000000000000000000000000000000000000000000],
+              ['John', 2, 4,new Date("2016-04-01"),51.53, -0.047,10000000000000000000000000000000000000000000000000],
+              ['Jessica', 6, 2,new Date("2016-04-01"),51.51, -0.034,10000000000000000000000000000000000000000000000000],
+              ['Aaron', 1, 1,new Date("2016-05-01"),51.40, -0.047,10000000000000000000000000000000000000000000000000],
+              ['Margareth', 8, 10,new Date("2016-05-01"),51.51, -0.147,10000000000000000000000000000000000000000000000000]] -->
+            <!-- {grid:3,
+              type:'Map',
+              coordIni:{lat: -22.9770165, lng:-42.0282533},
+              columns:{lat:15,lng:14}
+            }], -->
 <html>
   <head>
-      <script type="module" src="./gdash/index.js"></script>
+      <script type="module" src="./simplegdash/index.js"></script>
+      <script type="text/javascript" src="./simplegdash/utils.js"></script>
        <script type="text/javascript">
-        data_dash = {
-          data:{
-            columns:['Nome', 'Donuts comidos', 'Pizza comidas','data','lat', 'lng'],
-            columns_type:['string','number', 'number','date', 'number','number'],
-            rows:[['Michael' , 5, 2,new Date("2016-01-01"),51.509, -0.08],
-              ['Elisa', 7, 3,new Date("2016-02-01"),51.503,-0.06],
-              ['Robert', 3, 6,new Date("2016-03-01"),51.51, -0.047],
-              ['John', 2, 4,new Date("2016-04-01"),51.53, -0.047],
-              ['Jessica', 6, 2,new Date("2016-04-01"),51.51, -0.034],
-              ['Aaron', 1, 1,new Date("2016-05-01"),51.40, -0.047],
-              ['Margareth', 8, 10,new Date("2016-05-01"),51.51, -0.147]]
-          },
-          charts:[[{
-            grid:1,
-            type:'Scatter',
-            title:'Dispersão',
-            columns:[2,3],
-            },{
-            grid:1,
-            type:'Pie',
-            title:'Pizza',
-            columns:[1,3],
-            },{grid:1,
-            type:'Donuts',
-            title:'Rosca',
-            columns:[1,3],
-            },{grid:1,
-            type:'Line',
-            title:'Linha',
-            columns:[1,2,3],
-            },{grid:1,
-            type:'Bar',
-            title:'Barra',
-            columns:[1,2,3],
-            },{grid:1,
-            type:'Histogram',
-            title:'histograma',
-            columns:[1,3],
-            }],
-            {grid:3,
-              type:'Map',
-              coordIni:{lat:51.50, lng:-0.04},
-              columns:{lat:5,lng:6}
-            },{grid:24,
+       let data
+      fetch('http://127.0.0.1:5000', { headers:{} })
+      .then(retorno =>{ 
+        return retorno.json()
+      }).then(retorno =>{
+      data= retorno.data
+        data_dash = {data,
+          charts:[
+            {grid:1,
               type:'Table',
-              title:'Tabela 1',
-              columns:[0,1,2,3,4,5,6],
-              }],
+              columns:[1,2,,3,4,5,18,17]
+            }],
           filters:[
-            {type:'NumberRangeFilter', column:2},
-            {type:'NumberRangeFilter', column:3},
-            {type:'DateRangeFilter', column:4},
-            {type:'CategoryFilter', column:1},
-            {type:'StringFilter', column:1}
+            {type:'Range', column:3},
+            {type:'Date', column:1},
+            {type:'Category', column:4},
+            {type:'String', column:5}
           ],
           cards:[
           {
             column:2,
             type:'total',
-            subtitle:'Total Donuts'
-          },{
-            type:'percent',
-            column_dividend:3,
-            column_divisor:2,
-            subtitle:'Teste percentual'
+            subtitle:'Total Vendas',
+            calc:'count'
           },{
             type:'total-percent',
-            column:2,
-            column_divisor:2,
-            column_dividend:3,
-            subtitle:'Total + percent'
+            column:17,
+            calc:'sum',
+            column_dividend:17,
+            calc_dividend:'sum',
+            column_divisor:17,
+            calc_divisor:'count',
+            subtitle:'Total vendas area risco',
           },{
-            type:'percent-total',
-            column:3,
-            column_divisor:2,
-            column_dividend:3,
-            subtitle:'Total Pizza'
-          },{
-            column:2,
-            subtitle:'Total Donuts'
+            type:'total-percent',
+            column:18,
+            calc:'sum',
+            column_dividend:18,
+            calc_dividend:'sum',
+            column_divisor:17,
+            calc_divisor:'sum',
+            subtitle:'backlog ativacao',
           }
           ]
         }
+      inicialize(data_dash)
+        }
+      ).catch(error => console.log(error))
     </script>
   </head>
-  <body onload="inicialize(data_dash)">
-    <div class="nav">
-    <h1>DASHBOARD EXEMPLO</h1>
-    </div>
-    <div class="wrapper" id="dashboard" >
-      <div class="container-filters" id="container-filters">
-      </div>
-      <div class="container-cards" id="container-cards" >
-      </div>
-      <div class="container-charts" id="container-charts">
-      </div>
+  <body>
+<div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="#">Clients</a>
+  <a href="#">Contact</a>
+</div>
+
+<!-- Use any element to open the sidenav -->
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+    <div id="main">
+        <div class="nav">
+          <span class="material-symbols-outlined" onclick="openNav()">menu</span>
+          <div>
+            DASHBOARD EXEMPLO
+          </div>
+        </div>
+        <div class="wrapper" id="dashboard" >
+          <div class="container-filters" id="container-filters"></div>
+          <div class="container-cards" id="container-cards" ></div>
+          <div class="container-charts" id="container-charts"></div>
+        </div>
     </div>
   </body>
 </html>
