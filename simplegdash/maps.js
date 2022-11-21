@@ -1,5 +1,4 @@
 import { addChartGrid } from "./addStyles.js"
-import { createView } from "./data.js"
 
 export function createMap(chart, data){
     let coordenadas = getCoordenadas(data, chart.columns)
@@ -44,7 +43,6 @@ function plotMarkes(coordenadas, map, L, data, columns){
 }
 
 import { Gdata, GlistFilters } from "./dash.js"
-import { updateCards } from "./cards.js"
 function filterByCoordenadas(data, coordenadas, columns){
     let filter = GlistFilters[0]
     let view = createView(Gdata)

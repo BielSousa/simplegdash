@@ -1,56 +1,402 @@
-import { gdata } from "./data.js";
+import { gdata, gdataFiltered } from "./data.js";
 import { Gdata } from "./dash.js";
-import { updateCards } from "./cards.js";
 
+/** Classfilter */  
+ class filterClass {
+    constructor(dados, filter){
+        this._dados = dados
+        this._type = filter.type
+        this._column = filter.column
+        this._title = null
+        this._rows =[]
+        this._state = {}
+        this._divId = null
+        this._min = null
+        this._max = null
+        this._fvalues = []
+        this._divFilter = null
+        this._cssClass = null
+        this._observers = []
+        // range filter
+        this._sliderMin = null
+        this._sliderMax = null
+        this._inputMin = null
+        this._inputMax = null
+        this._track = null
+        this._minGap = 0
 
-function getFilterId(none){
-    const container = document.getElementById('container-filters')
-    const filters = container.children
-    const new_filter = document.createElement("div")
-    if(none === 'none'){
-        new_filter.style = 'display:none'
+        //date filter
+        this._startDate = null
+        this._endDate = null
+
+        //category filter
+        this._options = null
+        this._select = null
+
+        //string filter
+        this._inputString = null
+
+        // factory para criar os filtros
+        this._creaters = {
+            'Range':function(filter){createRangeFilter(filter)},
+            'Date':function(filter){createDateFilter(filter)},
+            'String':function(filter){createStringFilter(filter)},
+            'Category':function(filter){createCategoryFilter(filter)},
+        }
+
     }
-    let div_id = 'filter_' + filters.length
-    new_filter.id = div_id 
-    container.appendChild(new_filter)
-    return div_id
+    // inicializa o filtro
+    init(){
+        this._setTitle()
+        this._setCssClass()
+        this._setInicialState()
+        this._setDivId()
+        this._creaters[this._type](this)
+        this.setDivFilter()
+        this._setElements()
+    }
+
+    _setElements(){
+        if(this._type === 'Range'){
+            this._track = document.getElementById(this._divId).firstChild.children[2].children[0]
+            this._inputMin = document.getElementById(this._divId).firstChild.children[1].children[0]
+            this._inputMax = document.getElementById(this._divId).firstChild.children[1].children[1]
+            this._sliderMin = document.getElementById(this._divId).firstChild.children[2].children[1]
+            this._sliderMax = document.getElementById(this._divId).firstChild.children[2].children[2]
+            this._sliderMin.addEventListener('input',()=>{this._updateInputSliderMin()})
+            this._sliderMax.addEventListener('input',()=>{this._updateInputSliderMax()})
+            this._inputMin.addEventListener('change',()=>{this._updateInputNumberMin()})
+            this._inputMax.addEventListener('change',()=>{this._updateInputNumberMax()})
+        }else if(this._type === 'Date'){
+            this._startDate = document.getElementById(this._divId).firstChild.children[1].children[0].children[1]
+            this._endDate = document.getElementById(this._divId).firstChild.children[1].children[1].children[1]
+            this._startDate.addEventListener('change',()=>{this._updateDateStart()})
+            this._endDate.addEventListener('change',()=>{this._updateDateEnd()})
+        }else if(this._type === 'Category'){
+            this._select = document.getElementById(this._divId).children[1]
+            this._select.addEventListener('change',(evt)=>{this._updateSelect(evt)})
+            this._options = document.getElementById(this._divId).children[2]
+        }else if(this._type === 'String'){
+            this._inputString = document.getElementById(this._divId).children[1]
+            this._inputString.addEventListener('input', (evt) => {this._updateString(evt)} )
+        }
+
+    }
+
+    // Datatable do filter
+    set inputMin(inputMin){this._inputMin = inputMin}
+    get inputMin(){return this._inputMin}
+    // Datatable do filter
+    set inputMax(dados){this._inputMax = dainputMaxos}
+    get inputMax(){return this._inputMax}
+    // Datatable do filter
+    set sliderMax(sliderMax){this._sliderMax = sliderMax}
+    get sliderMax(){return this._sliderMax}
+    // Datatable do filter
+    set sliderMin(sliderMin){this._sliderMin = sliderMin}
+    get sliderMin(){return this._sliderMin}
+    // Datatable do filter
+    set track(track){this._track = track}
+    get track(){return this._track}
+    // Datatable do filter
+    set dados(dados){this._dados = dados}
+    get dados(){return this._dados}
+    
+    // Tipo do filtro
+    set type(type){this._type = type}
+    get type(){return this._type}
+ 
+    // coluna do filtro
+    set column(column){this._column = column}
+    get column(){return this._column}
+    
+    // titulo do filtro
+    _setTitle(){this._title = this._dados.getColumnLabel(this._column).toUpperCase().replace('_',' ')}
+    get title(){return this._title}
+    
+    // valor minimo do filtro Range/Date
+    set min(min){this._min = min}
+    get min(){return this._min}
+    
+    
+    // valor maximo do filtro Range/Date
+    set max(max){this._max = max}
+    get max(){return this._max}
+    
+    // todos Valores distintos do filtro
+    set values(values){this._fvalues = values}
+    get values(){return this._fvalues}
+    
+    _setRows(){
+        let dados = gdata(Gdata)
+        let rows = []
+        if(['Range','Date'].includes(this._type)){
+            let min = (this._type === 'Date'?formatDate['filter'](this._state.min):this._state.min)
+            let max = (this._type === 'Date'?formatDate['filter'](this._state.max):this._state.max)
+            rows = dados.getFilteredRows([{column:this._column, minValue:min, maxValue:max}])
+        }else if(['String', 'Category'].includes(this._type)){
+            let values = (this._state.values.length !== 0 ?this._state.values:[...this._dados.getDistinctValues(this._column)])
+            rows =  dados.getFilteredRows([{
+                        column:this._column,
+                        test: function (value, row, column, table) {
+                        return (values.indexOf(dados.getValue(row, column)) > -1)
+                        }}])
+        }
+        this._rows = rows
+
+    }
+
+    // Estado atual do filtro
+    set state(state){ 
+            if(this._type === 'Range'){
+                (Number(state.min) <= Number(state.max)?state = {min:Number(state.min),max:Number(state.max)}:_state = this._state)
+            }else if(this._type === 'Date'){
+                (formatDate['filter'](state.min) <= formatDate['filter'](state.max)?state = {min:state.min,max:state.max}:_state = this._state)                
+            }
+            this._state = state
+        this._setRows()
+     }
+    get state(){return this._state}
+    _setInicialState(){
+        let state
+        let values
+        switch(this._type){
+            case 'Range':
+                state = this.dados.getColumnRange(this._column)
+                this._state = state
+                this._min = this._state.min
+                this._max = this._state.max
+                break
+            case 'Date':
+                state = this.dados.getColumnRange(this._column)
+                this._state = {min:formatDate['input'](state.min), max:formatDate['input'](state.max)}
+                this._min = this._state.min
+                this._max = this._state.max
+                break
+            case 'Category':
+                values = ['---',...this._dados.getDistinctValues(this._column)]
+                this._state = {values:[]}
+                this._fvalues = values
+                break
+            case 'String':
+                values = [...this._dados.getDistinctValues(this._column)]
+                this._state = {values:[]}
+                break
+        }
+    }
+
+    // Id da div do filtro
+    _setDivId(){
+        const container = document.getElementById('container-filters')
+        const filters = container.children
+        const new_filter = document.createElement("div")
+        new_filter.id = `filter_${filters.length}` 
+        container.appendChild(new_filter)
+        this._divId = new_filter.id
+    }
+    get divId(){return this._divId}
+
+    // Classe CSS do filtro
+    _setCssClass(){
+        switch(this._type){
+            case 'Range':
+                this._cssClass = 'filter-number'
+                break
+            case 'Date':
+                this._cssClass = 'filter-date'
+                break
+            case 'String':
+                this._cssClass = 'filter-string'
+                break
+            case 'Category':
+                this._cssClass = 'filter-category'
+                break
+         }
+    }
+    get cssClass(){return this._cssClass}
+
+    // Div main do filtro
+    get divFilter(){return this._divFilter}
+    setDivFilter(){this._divFilter = document.getElementById(this._divId)}
+
+    set observer(observer){this._observers.push(observer)}
+    get observer(){return this._observer}
+    update_observers(){this._observers.forEach( observer => {console.log(observer);observer.update(this._rows, this._divId);})}
+
+    update(rows, divId){
+        let dados_filtered = gdataFiltered(Gdata, [this._column], rows, false, false)
+        let range = dados_filtered.getColumnRange(0)
+        let values = dados_filtered.getDistinctValues(0)
+        if(this._divId !== divId){
+            if(this._type === 'Range'){
+                this._state = {min:range.min, max:range.max}
+                this._inputMin.value = range.min
+                this._sliderMin.value = range.min
+                this._inputMax.value = range.max 
+                this._sliderMax.value = range.max
+                this._updateTrack()
+            }else if(this._type === 'Date'){
+                this._startDate.value = formatDate['input'](range.min)
+                this._endDate.value = formatDate['input'](range.max)
+                this._state = {min:formatDate['input'](range.min), max:formatDate['input'](range.max)}
+            
+            }else if(this._type === 'Category'){
+
+            }
+        }
+    }
+
+
+    // funcionalidade filter range
+
+   _updateInputSliderMin(){
+        if(Number(this._sliderMax.value) - Number(this._sliderMin.value) <= this._minGap){
+            this._sliderMin.value = Number(this._sliderMax.value) - this._minGap
+        }
+        this._updateTrack()
+        this._inputMin.value = this._sliderMin.value
+        this.state = {min: this._sliderMin.value, max: this._sliderMax.value}
+        this.update_observers()
+    }   
+
+    _updateInputSliderMax(){
+        if(Number(this._sliderMax.value) - Number(this._sliderMin.value) <= this._minGap){
+            this._sliderMax.value = Number(this._sliderMin.value) + this._minGap
+        }
+        this._updateTrack()
+        this._inputMax.value = this._sliderMax.value
+        this.state = {min: this._sliderMin.value, max: this._sliderMax.value}
+        this.update_observers()
+    }
+
+    _updateInputNumberMin(){
+        if(Number(this._sliderMax.value) - Number(this._inputMin.value) <= this._minGap){
+            this._inputMin.value = Number(this._sliderMax.value) - this._minGap
+        }
+        this._updateTrack()
+        
+        this._sliderMin.value = this._inputMin.value
+        this.state = {min: this._sliderMin.value, max: this._sliderMax.value}
+        this.update_observers()
+    }     
+    _updateInputNumberMax(){   
+         if(Number(this._inputMax.value) - Number(this._sliderMin.value) <= this._minGap){
+            this._inputMax.value = Number(this._sliderMin.value) + this._minGap
+        }
+        this._sliderMax.value = this._inputMax.value
+        this._updateTrack()
+        this.state = {min: this._sliderMin.value, max: this._sliderMax.value}
+        this.update_observers()
+    }
+
+    _updateTrack(){
+        let range = this._max - this._min
+        let percent1 = ((this._sliderMin.value - this._min)/range)*100
+        let percent2 = (1-((this._max - this._sliderMax.value)/range))*100
+        this._track.style.background = `linear-gradient(to right , #dadad5 ${percent1}%, #3264f3 ${percent1}%, #3264f3 ${percent2}%, #dadad5 ${percent2}%)`
+    }
+
+    // funcionalidade filter Date
+    _updateDateStart(){
+         if((new Date(this._endDate.value) - new Date(this._startDate.value))/(1000*60*60*24) <= this._minGap){
+            this._startDate.value = this._endDate.value
+        }
+        this.state = {min:this._startDate.value, max:this._endDate.value}
+        this.update_observers()
+    }
+    _updateDateEnd(){
+         if((new Date(this._endDate.value) - new Date(this._startDate.value))/(1000*60*60*24) <= this._minGap){
+            this._endDate.value = this._startDate.value
+        }
+        this.state = {min:this._startDate.value, max:this._endDate.value}
+        this.update_observers()
+    }
+
+    // funcionalidade Category
+     _updateSelect(evt){
+        if((evt.target.value !== this._fvalues[0])&&(this._state.values.length < this._fvalues.length - 1)&&!(this._state.values.includes(evt.target.value))){
+            this.state = {values:[evt.target.value,...this._state.values]}
+            let div_li = document.createElement('div')
+            let span = document.createElement('span')
+            let li = document.createElement('li')
+            div_li.style = 'display:flex; flex-direction:row;justify-content:center;align-content:center' // passar para o CSS
+            span.innerText = 'X'
+            div_li.appendChild(span)
+            div_li.appendChild(li)
+            li.innerText = evt.target.value
+            this._options.appendChild(div_li)
+            span.addEventListener('click', e =>{
+                e.target.parentNode.remove()
+                let index = this._state.values.indexOf(e.target.parentNode.lastChild.innerText)
+                let values = [...this._state.values]
+                if(index > -1){values.splice(index,1)}
+                this.state = {values:values}
+                this.update_observers()
+            })
+        }
+        this.update_observers()
+    }
+
+
+    // funcionalidades string
+     _updateString(evt){
+        let str = evt.target.value
+        let values = this._dados.getDistinctValues(Number(this._column))
+        this.state = {values:values.filter((value) => value.toLowerCase().replace(' ','_').startsWith(str.replace(' ','_')))}
+        this.update_observers()
+    }
+
 }
 
-export function createFilters(filters){
-    let listFilters = []
-    let new_data = gdata(Gdata)
-    let creaters = {
-        'Range':function(new_data, filter, label){return createRangeFilter(new_data, filter, label)},
-        'Date':function(new_data, filter, label){return createDateFilter(new_data, filter, label)},
-        'String':function(new_data, filter, label){return createStringFilter(new_data, filter, label)},
-        'Category':function(new_data, filter, label){return createCategoryFilter(new_data, filter, label)},
+var formatDate = {
+    filter:function (date){
+        date = new Date(date)
+        date = new Date(date.setHours(0))
+        date = new Date(date.setDate(date.getDate()+1))
+        return date
+    },
+    input: function (date){
+        date = new Date(date)
+        let day = date.getDate();
+        let month = date.getMonth()+1;
+        let year = date.getFullYear();
+        if (month < 10) month = "0" + month;
+        if (day < 10) day = "0" + day;
+        return year + "-" + month + "-" + day
     }
-    listFilters = [...filters].map(filter => {    
-        let label = new_data.getColumnLabel(filter.column).toUpperCase().replace('_',' ')
-        filter.divId = getFilterId()
-        filter.getState = function(){
-                return filter.state
-            }
-        filter.getContainerId = function(){
-                return filter.divId
-            }
+}
 
-        let created = creaters[filter.type](new_data, filter, label)
-        return created
+
+
+function inicializeFilter(dados, filter){
+    filter = new filterClass(dados, filter)
+    filter.init()
+    return filter
+}
+
+
+export function createFilters(filters){
+    let dados = gdata(Gdata)
+    let listFilters = []
+
+   filters.forEach(filter => {   
+        if(Object.keys(filter).length > 0 ){filter = inicializeFilter(dados, filter)}
+        listFilters.push(filter)
     });
+
+    listFilters.forEach(filter =>{
+        listFilters.forEach(observer =>{
+            filter.observer = observer
+        })
+    })
 
     return listFilters
 }
 
-function createRangeFilter(new_data, filter, label){ 
-    let range = new_data.getColumnRange(filter.column)
-    filter.cssClass = 'filter-number'
-    filter.state = {min:range.min, max:range.max}
-    saveFilterState(filter)
-
+function createRangeFilter(filter){ 
     let container_filter = document.getElementById(filter.divId)
     let title = document.createElement('label')
-    title.innerText = label
+    title.innerText = filter.title
     let div_filter = document.createElement('div')
     div_filter.classList =filter.cssClass
 
@@ -61,8 +407,8 @@ function createRangeFilter(new_data, filter, label){
     divSlider.classList = 'slider-container'
     sliderTrack.classList = 'track'
     let limite = document.createElement('label')
-    limite.style = 'text-align:center; font-size:14px; display: block; padding: 10px 0px;margin-top:5px; color: #999; background-color:#eee'
-    limite.innerText = "[min:".concat(String(range.min) + '\xa0'.repeat(3)).concat("max:").concat(range.max).concat("]")
+    limite.classList = 'limite-filter'
+    limite.innerText = "[min:".concat(String(filter.state.min) + '\xa0'.repeat(3)).concat("max:").concat(filter.state.max).concat("]")
 
     divSlider.appendChild(sliderTrack)
     div_filter.appendChild(title)
@@ -73,8 +419,8 @@ function createRangeFilter(new_data, filter, label){
 
     let inputNumberMin = document.createElement('input')
     let inputNumberMax = document.createElement('input')
-    inputNumberMin.style = 'width: 100px'
-    inputNumberMax.style = 'width: 100px'
+    inputNumberMin.type = 'number'
+    inputNumberMax.type = 'number'
     divNumber.appendChild(inputNumberMin)
     divNumber.appendChild(inputNumberMax)
 
@@ -86,94 +432,25 @@ function createRangeFilter(new_data, filter, label){
     inputSliderMin.type = 'range'
     inputSliderMin.name = 'rangeMin'
     inputSliderMin.divId = filter.divId
-    inputSliderMin.min = range.min
-    inputSliderMin.value = range.min
-    inputSliderMin.max = range.max
-    inputNumberMin.value = range.min
+    inputSliderMin.min = filter.state.min
+    inputSliderMin.value = filter.state.min
+    inputSliderMin.max = filter.state.max
+    inputNumberMin.value = filter.state.min
 
     inputSliderMax.type = 'range'
     inputSliderMax.name = 'rangeMax'
-    inputSliderMax.min = range.min
-    inputSliderMax.max = range.max
-    inputSliderMax.value = range.max
-    inputNumberMax.value = range.max
-
-    inputSliderMin.addEventListener('input',(e)=>{
-       let track = document.getElementById(filter.divId).firstChild.children[2].children[0]
-        let numberMin = document.getElementById(filter.divId).firstChild.children[1].children[0]
-        let minGap = 0
-        let sliderMin = document.getElementById(filter.divId).firstChild.children[2].children[1]
-        let sliderMax = document.getElementById(filter.divId).firstChild.children[2].children[2] 
-        if(Number(sliderMax.value) - Number(sliderMin.value) <= minGap){
-            sliderMin.value = Number(sliderMax.value) - minGap
-        }
-        sliderTrackFill(track, sliderMin, sliderMax)
-        numberMin.value = sliderMin.value
-        filter.state = {min: sliderMin.value, max: sliderMax.value}
-        saveFilterState(filter)
-    })    
-    inputSliderMax.addEventListener('input',(e)=>{
-       let track = document.getElementById(filter.divId).firstChild.children[2].children[0]
-        let numberMax = document.getElementById(filter.divId).firstChild.children[1].children[1]
-        let minGap = 0
-        let sliderMin = document.getElementById(filter.divId).firstChild.children[2].children[1]
-        let sliderMax = document.getElementById(filter.divId).firstChild.children[2].children[2] 
-        if(Number(sliderMax.value) - Number(sliderMin.value) <= minGap){
-            sliderMax.value = Number(sliderMin.value) + minGap
-        }
-        sliderTrackFill(track, sliderMin, sliderMax)
-        numberMax.value = sliderMax.value
-        filter.state = {min: sliderMin.value, max: sliderMax.value}
-        saveFilterState(filter)
-    })        
-    inputNumberMin.addEventListener('change',(e)=>{
-       let track = document.getElementById(filter.divId).firstChild.children[2].children[0]
-       let numberMin = document.getElementById(filter.divId).firstChild.children[1].children[0]
-        let minGap = 0
-        let sliderMin = document.getElementById(filter.divId).firstChild.children[2].children[1]
-        let sliderMax = document.getElementById(filter.divId).firstChild.children[2].children[2] 
-        if(Number(sliderMax.value) - Number(numberMin.value) <= minGap){
-            numberMin.value = Number(sliderMax.value) - minGap
-        }
-        sliderTrackFill(track, sliderMin, sliderMax)
-        sliderMin.value = numberMin.value
-        filter.state = {min: sliderMin.value, max: sliderMax.value}
-        saveFilterState(filter)
-    })      
-    inputNumberMax.addEventListener('change',()=>{
-       let track = document.getElementById(filter.divId).firstChild.children[2].children[0]
-        let numberMax = document.getElementById(filter.divId).firstChild.children[1].children[1]
-        let minGap = 0
-        let sliderMin = document.getElementById(filter.divId).firstChild.children[2].children[1]
-        let sliderMax = document.getElementById(filter.divId).firstChild.children[2].children[2] 
-        if(Number(numberMax.value) - Number(sliderMin.value) <= minGap){
-            numberMax.value = Number(sliderMin.value) + minGap
-        }
-        sliderMax.value = numberMax.value
-        sliderTrackFill(track, sliderMin, sliderMax)
-        filter.state = {min: sliderMin.value, max: sliderMax.value}
-        saveFilterState(filter)
-    })
-    return filter    
-
-    function sliderTrackFill(track, sliderMin, sliderMax){
-        let max = sliderMax.max - sliderMax.min
-        let percent1 = ((sliderMin.value-sliderMin.min)/max)*100
-        let percent2 = (1-((sliderMax.max-sliderMax.value)/max))*100
-        track.style.background = `linear-gradient(to right , #dadad5 ${percent1}%, #3264f3 ${percent1}%, #3264f3 ${percent2}%, #dadad5 ${percent2}%)`
-    }
+    inputSliderMax.min = filter.state.min
+    inputSliderMax.max = filter.state.max
+    inputSliderMax.value = filter.state.max
+    inputNumberMax.value = filter.state.max
 }
 
 
-function createDateFilter(new_data, filter, label){
-    let range = new_data.getColumnRange(filter.column)
-    filter.state = {min:fomartDateInput(new Date(range.min)), max:fomartDateInput(new Date(range.max))}
-    saveFilterState(filter)
-    filter.cssClass = 'filter-date'
+function createDateFilter(filter){
 
     let container_filter = document.getElementById(filter.divId)
     let div_filter = document.createElement('div')
-    div_filter.classList ='filter-date'
+    div_filter.classList =filter.cssClass
     let title = document.createElement('label')
     let limite = document.createElement('label')
     let div_inputs = document.createElement('div')
@@ -195,161 +472,58 @@ function createDateFilter(new_data, filter, label){
     div_filter.appendChild(limite)
     container_filter.appendChild(div_filter)
 
-    title.innerText = label
+    title.innerText = filter.title
+
+    // passar estilos para o css
     title.style = 'width:100%; text-align:center;display:block'
-    
     div_inputs.style = 'display: flex ; flex-direction: row; justify-content:space-around'
+    div_start.style = 'display: flex ; flex-direction: column; width:40% ; text-align:center'
+    div_end.style = 'display: flex ; flex-direction: column; width:40%;  text-align:center'
+    limite.style = 'text-align:center; font-size:14px; display: block; padding: 10px 0px;margin-top:5px; color: #999; background-color:#eee'
+    
     date_start.type = 'date'
     date_start.name = 'start'
     start_title.innerText = 'Data Inicial'
-    div_start.style = 'display: flex ; flex-direction: column; width:40% ; text-align:center'
-    div_end.style = 'display: flex ; flex-direction: column; width:40%;  text-align:center'
-    date_start.min =  fomartDateInput(new Date(range.min))
-    date_start.value =  fomartDateInput(new Date(range.min))
-    date_start.max =  fomartDateInput(new Date(range.max))
+    date_start.min =  filter.state.min
+    date_start.value =  filter.state.min
+    date_start.max =  filter.state.max
     
     end_title.innerText = 'Data Final'
     date_end.type = 'date'
     date_end.name = 'end'
-    date_end.min = fomartDateInput(new Date(range.min))
-    date_end.value = fomartDateInput(new Date(range.max))
-    date_end.max = fomartDateInput(new Date(range.max))
-    limite.innerText = "[min:".concat(String(date_start.value) + '\xa0'.repeat(5)).concat("max:").concat(date_end.value).concat("]")
-    limite.style = 'text-align:center; font-size:14px; display: block; padding: 10px 0px;margin-top:5px; color: #999; background-color:#eee'
-    
-    date_start.addEventListener('change', (e)=>{updateDateFilter(filter), saveFilterState(filter)});
-    date_end.addEventListener('change', (e)=>{updateDateFilter(filter), saveFilterState(filter)});
-
-    return filter
-    
-    function fomartDateInput(date){
-        var day = date.getDate();
-        var month = date.getMonth()+1;
-        var year = date.getFullYear();
-        if (month < 10) month = "0" + month;
-        if (day < 10) day = "0" + day;
-        return year + "-" + month + "-" + day
-    }
+    date_end.min = filter.state.min
+    date_end.value = filter.state.max
+    date_end.max = filter.state.max
+    limite.innerText = "[min:".concat(String(filter.state.min) + '\xa0'.repeat(5)).concat("max:").concat(filter.state.max).concat("]")
 }
 
-
-function createCategoryFilter(new_data, filter, label){
-    let values = ['---',...new_data.getDistinctValues(Number(filter.column))]
-    filter.state = {values:[]}
-    saveFilterState(filter)
-  
-    filter.cssClass = 'filter-category'
-    
+function createCategoryFilter(filter){
     let container_filter = document.getElementById(filter.divId)
     container_filter.classList = filter.cssClass
     let title = document.createElement('label')
-    title.innerText = label
+    title.innerText = filter.title
     container_filter.appendChild(title)
     let select = document.createElement('select') 
     let ul = document.createElement('ul') 
     container_filter.appendChild(select)
     container_filter.appendChild(ul)
-    values.forEach(value => {
+    filter.values.forEach(value => {
         let option = document.createElement('option')
         option.value = value
         option.innerText = value
         select.appendChild(option)
     })
-    let values_li = []
-    select.addEventListener('input', (e)=>{
-        let qtd_li = [...ul.children]
-        if(!(e.target.value === '---')&&(qtd_li.length<values.length - 1)&&!(values_li.includes(e.target.value))){
-            values_li.push(e.target.value)
-            let div_li = document.createElement('div')
-            div_li.style = 'display:flex; flex-direction:row;justify-content:center;align-content:center'
-            let span = document.createElement('span')
-            span.innerText = 'X'
-            let li = document.createElement('li')
-            div_li.appendChild(span)
-            div_li.appendChild(li)
-            li.innerText = e.target.value
-            ul.appendChild(div_li)
-            span.addEventListener('click', e =>{
-                e.target.parentNode.remove()
-                let index = values_li.indexOf(e.target.parentNode.lastChild.innerText)
-                if(index > -1){values_li.splice(index,1)}
-                filter.state.values = values_li
-                saveFilterState(filter)
-            })
-            filter.state.values = values_li
-            saveFilterState(filter)
-        }
-    })
-    return filter
 }
 
-function createStringFilter(new_data, filter, label){
-    filter.state = {values:[]}
-    saveFilterState(filter)
-    filter.cssClass = 'filter-string'
-
+function createStringFilter(filter){
     let container_filter = document.getElementById(filter.divId)
     container_filter.classList = filter.cssClass
     let title = document.createElement('label')
-    title.innerText = label
+    title.innerText = filter.title
     container_filter.appendChild(title)
     let input = document.createElement('input')
     input.type ='text'
     container_filter.appendChild(input)
-
-    input.addEventListener('input',(e)=>{
-        var values = new_data.getDistinctValues(Number(filter.column))
-        filter.state.values = values.filter((value) => value.toLowerCase().startsWith(e.target.value))
-        saveFilterState(filter)
-    })
-    return filter
-}
-
-
-
-function updateDateFilter(filter){
-    let container = document.getElementById(filter.divId)
-    let max = container.children[0].children[1].children[1].children[1]
-    let min = container.children[0].children[1].children[0].children[1]
-    if(min.value <= max.value){
-        filter.state = {min:min.value,max:max.value}
-        saveFilterState(filter)
-    }else{
-       let state = getStateFilter(filter)
-        min.value = state.min
-        max.value = state.max
-        alert('A data inicial não pode ser maior que a data final')
-    }
-}
-
-function getStateFilter(filter){
-    return JSON.parse(sessionStorage.getItem(filter.divId))
-}
-
-function fomartDateFilter(date){
-    date = new Date(date)
-    date = new Date(date.setHours(0))
-    date = new Date(date.setDate(date.getDate()+1))
-    return date
-}
-
-function saveFilterState(filter){
-    sessionStorage.setItem(filter.divId, JSON.stringify(filter.getState()))
-    let dados = gdata(Gdata)
-    let rows = []
-    if(['Range','Date'].includes(filter.type)){
-        let min = (filter.type === 'Date'?fomartDateFilter(filter.state.min):filter.state.min)
-        let max = (filter.type === 'Date'?fomartDateFilter(filter.state.max):filter.state.max)
-        rows = dados.getFilteredRows([{column:filter.column, minValue:min, maxValue:max}])
-    }else if(['String', 'Category'].includes(filter.type)){
-         rows =  dados.getFilteredRows([{
-                    column:filter.column,
-                    test: function (value, row, column, table) {
-                    return (filter.state.values.indexOf(table.getValue(row, column)) > -1)
-                    }}])
-    }
-    console.log(rows, filter)
-    updateCards(rows)
 }
 
 

@@ -12,24 +12,24 @@ export function addStyles(obj){
     }
 }
 
-export function addChartGrid(chart, grid){
-    if(grid == 1){
-        chart.style['grid-area'] = "1 / 1 / 2 / 2"
-    }else if(grid==2){
-        chart.style['grid-area'] = "1 / 2 / 2 / 3"
-    }else if(grid==3){
-        chart.style['grid-area'] = "2 / 1 / 2 / 1"
-    }else if(grid==4){
-        chart.style['grid-area'] = "2 / 2 / 3 / 3"
-    }else if(grid==12){
-        chart.style['grid-area'] = "1 / 1 / 2 / 3"
-    }else if(grid==34){
-        chart.style['grid-area'] = "2 / 1 / 3 / 3"
-    }else if(grid==13){
-        chart.style['grid-area'] = "1 / 1 / 3 / 2"
-    }else if(grid==24){
-        chart.style['grid-area'] = "1 / 2 / 3 / 3"
-    }else if(grid==0){
-        chart.style['grid-area'] = "1 / 1 / 3 / 3"
+export function addChartGrid(chart){
+    if(chart.grid == 1){
+        chart.divChart.style['grid-area'] = "1 / 1 / 2 / 2"
+    }else if(chart.grid==2){
+        chart.divChart.style['grid-area'] = "1 / 2 / 2 / 3"
+    }else if(chart.grid==3){
+        chart.divChart.style['grid-area'] = "2 / 1 / 2 / 1"
+    }else if(chart.grid==4){
+        chart.divChart.style['grid-area'] = "2 / 2 / 3 / 3"
+    }else if(chart.grid==12){
+        chart.divChart.style['grid-area'] = "1 / 1 / 2 / 3"
+    }else if(chart.grid==34){
+        chart.divChart.style['grid-area'] = "2 / 1 / 3 / 3"
+    }else if(chart.grid==13){
+        chart.divChart.style['grid-area'] = "1 / 1 / 3 / 2"
+    }else if(chart.grid==24){
+        chart.divChart.style['grid-area'] = "1 / 2 / 3 / 3"
+    }else if(chart.grid==0){
+        chart.divChart.style['grid-area'] = "1 / 1 / 3 / 3"
     }
 }

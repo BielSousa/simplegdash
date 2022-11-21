@@ -3,11 +3,10 @@ import { createCharts } from "./charts.js";
 import { createFilters } from "./filters.js";
 import { createCards } from "./cards.js";
 
-export var Gdashboard 
+export var Gdata
 export var GlistFilters
 export var GlistCharts 
 export var GlistCards
-export var Gdata
 
 export function createDash(data_dash){
     Gdata = addIndex(data_dash.data)
@@ -15,13 +14,10 @@ export function createDash(data_dash){
     const cards = data_dash.cards
     const charts = data_dash.charts
 
-
     if(dashIsValid(filters, cards, charts)){
         GlistFilters = createFilters(filters)
-        GlistCards = createCards(cards, Gdata, GlistFilters)
-        GlistCharts = createCharts(charts, Gdata)
-    
-        // DrawDash(gdata(Gdata))
+        GlistCards = createCards(cards)
+        GlistCharts = createCharts(charts)
 
     }else{
         var msg = "Você ultrapassou um dos limites do report:\n Gráficos <= 4 ["+ String(charts.length > 4)+"]\n Filtros <= 5 ["+String(filters.length > 5)+"]\n Cards <= 5 ["+String(cards.length > 5)+"]"
@@ -35,8 +31,4 @@ function dashIsValid(filters, cards, charts){
         return true
     }
     return false
-}
-
-function DrawDash(data, ){
-
 }

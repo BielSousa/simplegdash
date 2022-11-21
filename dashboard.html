@@ -8,11 +8,7 @@
               ['Jessica', 6, 2,new Date("2016-04-01"),51.51, -0.034,10000000000000000000000000000000000000000000000000],
               ['Aaron', 1, 1,new Date("2016-05-01"),51.40, -0.047,10000000000000000000000000000000000000000000000000],
               ['Margareth', 8, 10,new Date("2016-05-01"),51.51, -0.147,10000000000000000000000000000000000000000000000000]] -->
-            <!-- {grid:3,
-              type:'Map',
-              coordIni:{lat: -22.9770165, lng:-42.0282533},
-              columns:{lat:15,lng:14}
-            }], -->
+            <!-- ], -->
 <html>
   <head>
       <script type="module" src="./simplegdash/index.js"></script>
@@ -26,14 +22,30 @@
       data= retorno.data
         data_dash = {data,
           charts:[
-            {grid:1,
+            {grid:34,
               type:'Table',
-              columns:[1,2,,3,4,5,18,17]
+              columns:[1,2,3,4,5,7,10,17,18]
+            },{group:[{type:'Column',
+              title:'Evolução mensal',
+              columns:[1,16],
+              date:'month'
+            },{type:'Bar',
+              title:'Backlog e area de risco por canal',
+              columns:[5,18, 17]
+            },{title:'valor de vendas por canal',
+              type:'Column',
+              columns:[5,16]
+            }], 
+            grid:1
+            },{grid:2,
+              type:'Map',
+              coordIni:{lat: -22.9770165, lng:-42.0282533},
+              columns:{lat:14,lng:13}
             }],
           filters:[
-            {type:'Range', column:3},
+            {type:'Range', column:16},
             {type:'Date', column:1},
-            {type:'Category', column:4},
+            {type:'Category', column:5},
             {type:'String', column:5}
           ],
           cards:[
@@ -60,6 +72,13 @@
             column_divisor:17,
             calc_divisor:'sum',
             subtitle:'backlog ativacao',
+          },
+          {type:'percent',
+          column_dividend:18,
+          calc_dividend:'sum',
+          column_divisor:18,
+          calc_divisor:'count',
+          subtitle:'Area de risco Ativadas'
           }
           ]
         }
@@ -71,10 +90,10 @@
   <body>
 <div id="mySidenav" class="sidenav">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
+  <a href="#">Pagina 1</a>
+  <a href="#">Pagina 2</a>
+  <a href="#">Pagina 3</a>
+  <a href="#">Pagina 4</a>
 </div>
 
 <!-- Use any element to open the sidenav -->
